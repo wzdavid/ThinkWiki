@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import gzip
 import html as html_lib
+import os
 import re
 import shutil
 import zlib
@@ -85,6 +86,7 @@ CONTENT_SELECTORS = (
     ".rich_media_content",
     "body",
 )
+SUPPORTED_INGEST_EXTENSIONS = MARKDOWN_EXTENSIONS | {".pdf", ".docx", ".xlsx", ".xls", ".pptx"}
 
 
 def normalize_text(text: str) -> str:
@@ -594,6 +596,48 @@ def build_link(path: Path, root: Path) -> str:
     return f"- [{path.name}](../../{repo_path})"
 
 
+def ordered_unique(items: list[str]) -> list[str]:
+    results: list[str] = []
+    seen: set[str] = set()
+    for item in items:
+        value = item.strip()
+        if not value or value in seen:
+            continue
+        seen.add(value)
+        results.append(value)
+    return results
+
+
+def extract_section(body: str, heading: str) -> str:
+    lines = body.splitlines()
+    capture = False
+    collected: list[str] = []
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("## "):
+            current = stripped[3:].strip()
+            if capture:
+                break
+            capture = current == heading
+            continue
+        if capture:
+            collected.append(line)
+    return "\n".join(collected).strip()
+
+
+def source_items_block(source_paths: list[str]) -> str:
+    return "\n".join(f"  - {path}" for path in source_paths)
+
+
+def source_links_block(topic_path: Path, root: Path, source_paths: list[str]) -> str:
+    lines: list[str] = []
+    for source_path in source_paths:
+        target_path = root / source_path
+        relative = Path(os.path.relpath(target_path, start=topic_path.parent)).as_posix()
+        lines.append(f"- [{target_path.stem}]({relative})")
+    return "\n".join(lines)
+
+
 def find_existing_source_page(root: Path, title: str, slug: str) -> Path | None:
     page_dir = root / "wiki" / "sources"
     slug_candidate = page_dir / f"{slug}.md"
@@ -609,18 +653,103 @@ def find_existing_source_page(root: Path, title: str, slug: str) -> Path | None:
 def ensure_topic_page(root: Path, topic: str, source_page: Path, summary: str) -> Path:
     topic_slug = slugify(topic, "topic")
     topic_path = root / "wiki" / "topics" / f"{topic_slug}.md"
+    source_repo_path = source_page.relative_to(root).as_posix()
+    existing_meta: dict[str, object] = {}
+    related_links = ""
     if topic_path.exists():
-        return topic_path
+        existing_meta, body = parse_frontmatter(read_text(topic_path))
+        related_links = extract_section(body, "Related Pages")
+
+    raw_sources = existing_meta.get("sources", [])
+    existing_sources = [str(item).strip() for item in raw_sources] if isinstance(raw_sources, list) else []
+    merged_sources = ordered_unique(existing_sources + [source_repo_path])
+    topic_title = str(existing_meta.get("title") or topic).strip() or topic
+    topic_summary = str(existing_meta.get("summary") or "").strip() or summary
+    created = str(existing_meta.get("created") or today_str()).strip() or today_str()
     content = render_template(load_template("pages/topic.md"), {
-        "TITLE": topic,
-        "DATE": today_str(),
-        "SUMMARY": summary,
-        "SOURCE_PAGE": source_page.name,
-        "SOURCE_LINKS": f"- [{source_page.stem}](../sources/{source_page.name})",
-        "RELATED_LINKS": "",
+        "TITLE": topic_title,
+        "DATE": created,
+        "UPDATED": today_str(),
+        "SUMMARY": topic_summary,
+        "SOURCE_ITEMS": source_items_block(merged_sources),
+        "SOURCE_LINKS": source_links_block(topic_path, root, merged_sources),
+        "RELATED_LINKS": related_links,
     })
     write_text(topic_path, content)
     return topic_path
+
+
+def ingest_local_source(
+    root: Path,
+    source_path: Path,
+    title_override: str = "",
+    topic: str = "",
+    confidence: str = "",
+    status: str = "",
+) -> dict[str, object]:
+    raw_dir = classify_raw_dir(source_path)
+    normalized_text = normalize_local_source(source_path)
+    fallback_title = humanize_name(source_path.stem)
+    title = title_override.strip() or extract_title_from_markdown(normalized_text, fallback_title)
+    slug = slugify(title, "source")
+    raw_path = unique_path(root / "raw" / raw_dir / f"{today_str()}-{slug}{source_path.suffix.lower()}")
+    normalized_path = unique_path(root / "normalized" / raw_dir / f"{today_str()}-{slug}.md")
+    shutil.copy2(source_path, raw_path)
+    write_text(normalized_path, normalized_text)
+
+    summary, bullets = summarize(normalized_text)
+    source_page = find_existing_source_page(root, title, slug) or (root / "wiki" / "sources" / f"{slug}.md")
+    related_links = ""
+    touched = [source_page.relative_to(root).as_posix()]
+    if topic.strip():
+        topic_page = ensure_topic_page(root, topic.strip(), source_page, summary)
+        related_links = f"- [{topic.strip()}](../topics/{topic_page.name})"
+        touched.append(topic_page.relative_to(root).as_posix())
+
+    resolved_confidence = confidence.strip() or "extracted"
+    resolved_status = status.strip() or "active"
+    source_content = render_template(load_template("pages/source.md"), {
+        "TITLE": title,
+        "DATE": today_str(),
+        "SUMMARY": summary,
+        "RAW_PATH": raw_path.relative_to(root).as_posix(),
+        "KEY_POINTS": "\n".join(f"- {item}" for item in bullets),
+        "RAW_LINKS": build_link(raw_path, root),
+        "NORMALIZED_LINKS": build_link(normalized_path, root),
+        "EXTRACTED_EXCERPT": excerpt_markdown(normalized_text),
+        "RELATED_LINKS": related_links,
+        "OPEN_QUESTIONS": "",
+        "CONFIDENCE": resolved_confidence,
+        "STATUS": resolved_status,
+    })
+    write_text(source_page, source_content)
+    return {
+        "title": title,
+        "raw_path": raw_path,
+        "normalized_path": normalized_path,
+        "source_page": source_page,
+        "touched": touched,
+    }
+
+
+def collect_directory_sources(source_dir: Path) -> tuple[list[Path], list[Path]]:
+    supported: list[Path] = []
+    skipped: list[Path] = []
+    for path in sorted(source_dir.rglob("*")):
+        if not path.is_file():
+            continue
+        if path.suffix.lower() in SUPPORTED_INGEST_EXTENSIONS:
+            supported.append(path)
+        else:
+            skipped.append(path)
+    return supported, skipped
+
+
+def infer_directory_topic(source_dir: Path, source_file: Path) -> str:
+    relative = source_file.relative_to(source_dir)
+    if len(relative.parts) > 1:
+        return relative.parts[0]
+    return source_dir.name
 
 
 def main() -> int:
@@ -646,16 +775,33 @@ def main() -> int:
         source_path = Path(args.source).resolve()
         if not source_path.exists():
             raise SystemExit(f"Source file not found: {source_path}")
-        raw_dir = classify_raw_dir(source_path)
-        normalized_text = normalize_local_source(source_path)
-        fallback_title = humanize_name(source_path.stem)
-        title = args.title.strip() or extract_title_from_markdown(normalized_text, fallback_title)
-        slug = slugify(title, "source")
-        raw_path = unique_path(root / "raw" / raw_dir / f"{today_str()}-{slug}{source_path.suffix.lower()}")
-        normalized_path = unique_path(root / "normalized" / raw_dir / f"{today_str()}-{slug}.md")
-        shutil.copy2(source_path, raw_path)
-        write_text(normalized_path, normalized_text)
-        raw_text = normalized_text
+        if source_path.is_dir():
+            files, skipped = collect_directory_sources(source_path)
+            if not files:
+                raise SystemExit(f"No supported files found under: {source_path}")
+            results = []
+            for item in files:
+                topic_name = args.topic.strip() or infer_directory_topic(source_path, item)
+                results.append(ingest_local_source(root, item, topic=topic_name))
+            write_text(root / "index.md", rebuild_index.build_index(root))
+            log_lines = [
+                f"- source_dir: {source_path}",
+                f"- imported: {len(results)}",
+                *[f"- created: {result['source_page'].relative_to(root).as_posix()}" for result in results],
+            ]
+            if skipped:
+                log_lines.append(f"- skipped: {len(skipped)} unsupported files")
+            append_log(root, f"[{today_str()}] ingest-dir | {source_path.name}", log_lines)
+            print(f"Ingested {len(results)} files from {source_path}")
+            return 0
+        result = ingest_local_source(
+            root,
+            source_path,
+            title_override=args.title,
+            topic=args.topic,
+            confidence=args.confidence,
+            status=args.status,
+        )
     elif args.url:
         normalized_text, raw_html = fetch_webpage_as_markdown(args.url, args.title)
         parsed = urlparse(args.url)
@@ -676,42 +822,40 @@ def main() -> int:
         write_text(raw_path, raw_text)
         write_text(normalized_path, raw_text)
 
+    if args.source:
+        write_text(root / "index.md", rebuild_index.build_index(root))
+        append_log(root, f"[{today_str()}] ingest | {result['title']}", [
+            f"- raw: {result['raw_path'].relative_to(root).as_posix()}",
+            f"- normalized: {result['normalized_path'].relative_to(root).as_posix()}",
+            *[f"- created: {item}" for item in result["touched"]],
+        ])
+        print(f"Ingested {result['title']}")
+        return 0
+
     summary, bullets = summarize(raw_text)
     confidence = args.confidence.strip() or ("mixed" if args.text else "extracted")
     status = args.status.strip() or "active"
     source_page = find_existing_source_page(root, title, slug) or (root / "wiki" / "sources" / f"{slug}.md")
-    related_links = ""
-    if args.topic:
-        topic_slug = slugify(args.topic, "topic")
-        related_links = f"- [{args.topic}](../topics/{topic_slug}.md)"
-    raw_links = build_link(raw_path, root)
-    normalized_links = build_link(normalized_path, root)
     source_content = render_template(load_template("pages/source.md"), {
         "TITLE": title,
         "DATE": today_str(),
         "SUMMARY": summary,
         "RAW_PATH": raw_path.relative_to(root).as_posix(),
         "KEY_POINTS": "\n".join(f"- {item}" for item in bullets),
-        "RAW_LINKS": raw_links,
-        "NORMALIZED_LINKS": normalized_links,
+        "RAW_LINKS": build_link(raw_path, root),
+        "NORMALIZED_LINKS": build_link(normalized_path, root),
         "EXTRACTED_EXCERPT": excerpt_markdown(raw_text),
-        "RELATED_LINKS": related_links,
+        "RELATED_LINKS": "",
         "OPEN_QUESTIONS": "",
         "CONFIDENCE": confidence,
         "STATUS": status,
     })
     write_text(source_page, source_content)
-
-    touched = [source_page.relative_to(root).as_posix()]
-    if args.topic:
-        topic_page = ensure_topic_page(root, args.topic, source_page, summary)
-        touched.append(topic_page.relative_to(root).as_posix())
-
     write_text(root / "index.md", rebuild_index.build_index(root))
     append_log(root, f"[{today_str()}] ingest | {title}", [
         f"- raw: {raw_path.relative_to(root).as_posix()}",
         f"- normalized: {normalized_path.relative_to(root).as_posix()}",
-        *[f"- created: {item}" for item in touched],
+        f"- created: {source_page.relative_to(root).as_posix()}",
     ])
     print(f"Ingested {title}")
     return 0

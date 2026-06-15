@@ -18,8 +18,15 @@ def normalize_sources(meta: dict[str, object]) -> list[str]:
 
 
 def add_node(nodes: dict[str, dict[str, str]], node_id: str, label: str, node_type: str) -> None:
-    if node_id not in nodes:
+    existing = nodes.get(node_id)
+    if existing is None:
         nodes[node_id] = {"id": node_id, "label": label, "type": node_type}
+        return
+    # Upgrade placeholder/raw classifications when we later discover a wiki-backed node type.
+    if existing["type"] in {"raw", "file", "page"} and node_type not in {existing["type"], "raw"}:
+        existing["type"] = node_type
+    if (existing["label"] == Path(node_id).stem or existing["type"] == "raw") and label:
+        existing["label"] = label
 
 
 def add_edge(
@@ -33,6 +40,17 @@ def add_edge(
     if edge_key not in seen_edges:
         seen_edges.add(edge_key)
         edges.append({"source": source, "target": target, "type": edge_type})
+
+
+def node_type_for_path(node_id: str) -> str:
+    if node_id.startswith("raw/"):
+        return "raw"
+    if node_id.startswith("wiki/"):
+        parent_name = Path(node_id).parent.name
+        if parent_name.endswith("s"):
+            return parent_name[:-1]
+        return "page"
+    return "file"
 
 
 def main() -> int:
@@ -50,13 +68,16 @@ def main() -> int:
     for page in pages:
         meta, body = parse_frontmatter(read_text(page))
         node_id = page.relative_to(root).as_posix()
-        add_node(nodes, node_id, str(meta.get("title") or page.stem), str(meta.get("type") or page.parent.name[:-1]))
+        page_type = str(meta.get("type") or page.parent.name[:-1])
+        add_node(nodes, node_id, str(meta.get("title") or page.stem), page_type)
 
         for source in normalize_sources(meta):
             source_path = (root / source).resolve()
             source_id = source_path.relative_to(root).as_posix() if source_path.is_relative_to(root) else source
-            add_node(nodes, source_id, Path(source_id).stem, "raw")
-            add_edge(edges, seen_edges, node_id, source_id, "cites")
+            source_type = node_type_for_path(source_id)
+            add_node(nodes, source_id, Path(source_id).stem, source_type)
+            edge_type = "cites" if source_type == "raw" else "includes" if page_type == "topic" else "references"
+            add_edge(edges, seen_edges, node_id, source_id, edge_type)
 
         for link in markdown_links(body):
             if is_external_link(link):

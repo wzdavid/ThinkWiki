@@ -2,10 +2,10 @@
 title: {{TITLE}}
 type: topic
 created: {{DATE}}
-updated: {{DATE}}
+updated: {{UPDATED}}
 summary: {{SUMMARY}}
 sources:
-  - wiki/sources/{{SOURCE_PAGE}}
+{{SOURCE_ITEMS}}
 tags:
   - topic
 confidence: mixed

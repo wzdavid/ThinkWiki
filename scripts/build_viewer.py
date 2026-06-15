@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 from html import escape
+import os
 from pathlib import Path
 import re
 
@@ -64,7 +65,22 @@ def extract_ref_targets(text: str) -> list[str]:
     return [match.strip() for match in matches if match.strip()]
 
 
-def extract_section_records(body: str) -> list[dict[str, object]]:
+def viewer_href(root: Path, target: Path) -> str:
+    return Path(os.path.relpath(target, start=root / "output" / "viewer")).as_posix()
+
+
+def link_record(root: Path, page: Path, raw_link: str) -> dict[str, str]:
+    resolved = (page.parent / raw_link).resolve()
+    label = Path(raw_link).name or raw_link
+    if resolved.is_relative_to(root.resolve()):
+        repo_path = resolved.relative_to(root).as_posix()
+        if repo_path.startswith("wiki/") and resolved.exists():
+            return {"label": label, "raw": raw_link, "targetId": repo_path, "href": ""}
+        return {"label": label, "raw": raw_link, "targetId": "", "href": viewer_href(root, resolved)}
+    return {"label": label, "raw": raw_link, "targetId": "", "href": raw_link}
+
+
+def extract_section_records(root: Path, page: Path, body: str) -> list[dict[str, object]]:
     records: list[dict[str, object]] = []
     current_title = "Overview"
     block_lines: list[str] = []
@@ -83,7 +99,7 @@ def extract_section_records(body: str) -> list[dict[str, object]]:
             "anchor": slugify_anchor(current_title),
             "content": content[:2400],
             "refs": extract_ref_targets(content),
-            "links": [link for link in markdown_links(content) if not is_external_link(link)],
+            "links": [link_record(root, page, link) for link in markdown_links(content) if not is_external_link(link)],
         })
 
     for raw_line in body.replace("\r\n", "\n").splitlines():
@@ -109,7 +125,7 @@ def extract_section_records(body: str) -> list[dict[str, object]]:
 def collect_page_record(root: Path, page: Path) -> dict[str, object]:
     meta, body = parse_frontmatter(read_text(page))
     page_type = str(meta.get("type") or page.parent.name[:-1])
-    links = [link for link in markdown_links(body) if not is_external_link(link)]
+    links = [link_record(root, page, link) for link in markdown_links(body) if not is_external_link(link)]
     return {
         "id": page.relative_to(root).as_posix(),
         "title": str(meta.get("title") or page.stem),
@@ -123,7 +139,7 @@ def collect_page_record(root: Path, page: Path) -> dict[str, object]:
         "sources": normalize_list(meta, "sources"),
         "tags": normalize_list(meta, "tags"),
         "links": links,
-        "sections": extract_section_records(body),
+        "sections": extract_section_records(root, page, body),
     }
 
 
@@ -476,6 +492,7 @@ def render_html(payload: dict[str, object]) -> str:
           page.id,
           ...(page.tags || []),
           ...(page.sources || []),
+          ...((page.links || []).map((item) => item.raw || item.label || "")),
         ].join(" ").toLowerCase().includes(needle);
     }}
 
@@ -501,8 +518,8 @@ def render_html(payload: dict[str, object]) -> str:
         return items;
       }}
       items.sort((a, b) => {{
-        const hayA = [a.title, a.summary, a.excerpt, ...(a.tags || []), ...(a.sources || [])].join(" ").toLowerCase();
-        const hayB = [b.title, b.summary, b.excerpt, ...(b.tags || []), ...(b.sources || [])].join(" ").toLowerCase();
+        const hayA = [a.title, a.summary, a.excerpt, ...(a.tags || []), ...(a.sources || []), ...((a.links || []).map((item) => item.raw || item.label || ""))].join(" ").toLowerCase();
+        const hayB = [b.title, b.summary, b.excerpt, ...(b.tags || []), ...(b.sources || []), ...((b.links || []).map((item) => item.raw || item.label || ""))].join(" ").toLowerCase();
         const scoreA =
           (needle && hayA.includes(needle) ? 5 : 0) +
           confidenceRank(a.confidence) * 2 +
@@ -548,6 +565,20 @@ def render_html(payload: dict[str, object]) -> str:
     function renderList(items) {{
       if (!items || !items.length) return `<p class="empty">Nothing here yet.</p>`;
       return `<ul class="list">${{items.map((item) => `<li>${{escapeHtml(item)}}</li>`).join("")}}</ul>`;
+    }}
+
+    function renderLinkActions(items) {{
+      if (!items || !items.length) return `<p class="empty">Nothing here yet.</p>`;
+      return `
+        <div class="ref-list">
+          ${{items.map((item) => {{
+            if (item.targetId) {{
+              return `<button class="ref-button" data-page-target="${{escapeAttribute(item.targetId)}}">${{escapeHtml(item.label || item.raw || item.targetId)}}</button>`;
+            }}
+            return `<a class="ref-button" href="${{escapeAttribute(item.href || item.raw || "#")}}" target="_blank" rel="noopener">${{escapeHtml(item.label || item.raw || item.href || "")}}</a>`;
+          }}).join("")}}
+        </div>
+      `;
     }}
 
     function renderRefButtons(items, label) {{
@@ -610,7 +641,7 @@ def render_html(payload: dict[str, object]) -> str:
           </div>
           <div class="section-content">${{escapeHtml(section.content || "")}}</div>
           ${{section.refs && section.refs.length ? ("<h3>Refs</h3>" + renderRefButtons(section.refs, "ref")) : ""}}
-          ${{section.links && section.links.length ? ("<h3>Links</h3>" + renderRefButtons(section.links, "page-link")) : ""}}
+          ${{section.links && section.links.length ? ("<h3>Links</h3>" + renderLinkActions(section.links)) : ""}}
         </div>
       `).join("");
     }}
@@ -647,7 +678,7 @@ def render_html(payload: dict[str, object]) -> str:
         </div>
         <div class="card">
           <h2>Links</h2>
-          ${{renderList(page.links)}}
+          ${{renderLinkActions(page.links)}}
         </div>
         <div class="card">
           <h2>Sections</h2>
@@ -659,12 +690,8 @@ def render_html(payload: dict[str, object]) -> str:
       viewerEl.querySelectorAll("[data-ref]").forEach((button) => {{
         button.addEventListener("click", () => activateRef(button.dataset.ref));
       }});
-      viewerEl.querySelectorAll("[data-page-link]").forEach((button) => {{
-        let target = String(button.dataset.pageLink || "");
-        if (target.startsWith("../")) {{
-          target = `wiki/${{target.split("../").filter(Boolean).join("/")}}`;
-        }}
-        button.addEventListener("click", () => activateRef(target));
+      viewerEl.querySelectorAll("[data-page-target]").forEach((button) => {{
+        button.addEventListener("click", () => activateRef(button.dataset.pageTarget));
       }});
       if (activeSectionAnchor) {{
         activateSection(activeSectionAnchor);
