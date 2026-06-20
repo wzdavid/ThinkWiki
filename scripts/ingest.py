@@ -23,6 +23,7 @@ from utils import (
     classify_raw_dir,
     find_repo_root,
     load_template,
+    output_access_lines,
     parse_frontmatter,
     read_text,
     render_template,
@@ -415,7 +416,7 @@ def convert_with_markitdown(source_path: Path) -> str:
     except Exception as exc:
         raise SystemExit(
             "markitdown Python package is not available. "
-            "Install llm-wiki runtime dependencies before converting office documents."
+            "Install ThinkWiki runtime dependencies before converting office documents."
         ) from exc
     try:
         result = MarkItDown().convert(str(source_path))
@@ -793,6 +794,8 @@ def main() -> int:
                 log_lines.append(f"- skipped: {len(skipped)} unsupported files")
             append_log(root, f"[{today_str()}] ingest-dir | {source_path.name}", log_lines)
             print(f"Ingested {len(results)} files from {source_path}")
+            for line in output_access_lines(root):
+                print(line)
             return 0
         result = ingest_local_source(
             root,
@@ -830,6 +833,8 @@ def main() -> int:
             *[f"- created: {item}" for item in result["touched"]],
         ])
         print(f"Ingested {result['title']}")
+        for line in output_access_lines(root):
+            print(line)
         return 0
 
     summary, bullets = summarize(raw_text)
@@ -858,6 +863,8 @@ def main() -> int:
         f"- created: {source_page.relative_to(root).as_posix()}",
     ])
     print(f"Ingested {title}")
+    for line in output_access_lines(root):
+        print(line)
     return 0
 
 

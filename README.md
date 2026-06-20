@@ -1,66 +1,89 @@
-# llm-wiki
+# ThinkWiki
 
-`llm-wiki` 是一个符合 Agent Skills 规范的本地 Markdown 知识库 skill。
+`ThinkWiki` 是一个符合 Agent Skills 规范的本地 Markdown 知识库 skill。它帮助 Agent 持续整理、沉淀、查询和可视化你的知识库，而不是每次都从原始资料重新推导。
 
-它的目标不是做一个复杂的知识平台，而是提供一套真正可运行的脚本闭环，让 Agent 可以在本地完成这些动作：
+## 效果预览
 
-- 初始化 wiki 工作区
-- 导入 Markdown、DOCX、PDF、网页到知识库
-- 基于已有知识页回答问题
-- 将高价值内容沉淀为 `query / synthesis / decision / concept`
-- 生成图谱和本地浏览页
-- 检查依赖、结构和摘要质量
+下面这三张样例图展示了 `ThinkWiki` 生成后的三个核心成果页：
 
-推荐用法：
+- 成果入口页：用户最容易直接打开的统一入口，也会展示当前 wiki 的页面规模和图谱状态
+- 浏览页：适合按页面类型、状态、置信度浏览整个 wiki
+- 图谱页：适合查看页面之间的引用、包含和链接关系
+- 这三张图都来自仓库内 `docs/demo-wiki` 的真实输出，而不是手工绘制的示意图
 
-- 安装为 skill 后，优先直接通过 Agent 对话来使用 `llm-wiki`
-- README 里的命令主要用于调试、排错和宿主集成参考
-- 对最终用户来说，通常不需要手动记住这些底层命令
+### 成果入口页样例
 
-## 适用场景
+![ThinkWiki Output Hub Preview](docs/assets/output-hub-preview.png)
 
-适合：
+### 浏览页样例
 
-- 个人知识库
-- 项目文档知识管理
-- 研究资料整理
-- 本地 wiki 问答与沉淀
-- 为 OpenClaw、Hermes Agent、Claude Code、Trae 等支持 Agent Skills 的宿主提供知识管理能力
+![ThinkWiki Viewer Preview](docs/assets/viewer-preview.png)
 
-不适合：
+### 图谱页样例
 
-- 多租户企业知识平台
-- 复杂在线协作与权限系统
-- 任务流转或项目管理系统本身
+![ThinkWiki Graph Preview](docs/assets/graph-preview.png)
 
-## 当前能力
+## 30 秒上手
 
-- 导入 Markdown、PDF、DOCX、网页与公众号文章
-- 生成本地知识页、综合页、概念页、决策页
+安装好 `ThinkWiki` 之后，最自然的使用方式通常是直接通过 Agent 对话来使用它。
+
+你可以直接对 Agent 这样说：
+
+- “帮我初始化一个知识库，名字叫 `My Wiki`”
+- “把这个 PDF 导入到知识库里：`/path/to/file.pdf`”
+- “把这个网页整理进知识库：`https://example.com/article`”
+- “基于当前知识库回答：AI 原生团队的核心定义是什么？”
+- “帮我生成一个本地知识图谱，我想可视化看看”
+
+如果宿主支持工具自动调用，Agent 会直接使用 `ThinkWiki` 完成这些动作；对最终用户来说，通常不需要手动记住底层命令。
+
+## 它能做什么
+
+- 初始化本地 wiki 工作区
+- 导入 Markdown、PDF、DOCX、XLSX、XLS、PPTX、网页和文本
 - 基于已有知识页做证据优先问答
-- 生成图谱、本地浏览页，并做运行时与结构体检
+- 将高价值结果沉淀为 `query / synthesis / decision / concept`
+- 生成本地浏览页和离线知识图谱
+- 检查运行时依赖、结构和链接健康度
 
-## 目录结构
+## 为什么适合作为 Agent Skill
 
-仓库结构：
+`ThinkWiki` 的目标就是作为一个完整 skill 被安装和使用，而不是依赖额外 companion skills 或复杂安装器。
 
-```text
-llm-wiki/
-├── README.md
-├── SKILL.md
-├── requirements.txt
-├── scripts/
-└── templates/
-```
+- 整个仓库就是一个 skill
+- 统一入口是 `scripts/thinkwiki`
+- 首次运行时会自举仓库内 `.venv`
+- 运行依赖来自仓库内 `requirements.txt`
+- 支持 macOS、Linux 和 Windows
+- 不要求用户理解内部脚本结构
+- 不要求前端工程或服务端环境
 
-知识库工作区结构：
+对宿主来说，只需要安装 `ThinkWiki` 这一个 skill；对用户来说，只需要围绕知识库说自然语言需求。
+
+## 你会得到什么
+
+一个典型知识库会长成这样：
 
 ```text
 <wiki-root>/
 ├── raw/
 ├── normalized/
 ├── wiki/
+│   ├── sources/
+│   ├── topics/
+│   ├── concepts/
+│   ├── decisions/
+│   ├── syntheses/
+│   └── queries/
 ├── output/
+│   ├── graph/
+│   │   ├── graph.json
+│   │   ├── graph.md
+│   │   └── index.html
+│   ├── viewer/
+│       ├── viewer.json
+│       └── index.html
+│   └── index.html
 ├── .wiki-schema.md
 ├── index.md
 ├── overview.md
@@ -68,11 +91,28 @@ llm-wiki/
 └── log.md
 ```
 
+其中：
+
+- `wiki/` 保存沉淀后的知识页面
+- `output/viewer/index.html` 是本地浏览页
+- `output/graph/index.html` 是本地知识图谱
+- `output/index.html` 是统一成果入口页
+- 这些成果都可以直接在浏览器打开查看
+
+## 和普通 RAG 的区别
+
+`ThinkWiki` 更强调“持续沉淀”而不是“一次问答”：
+
+- Markdown 和文件系统是本地真相源
+- 来源、摘要、证据和派生页面都可追溯
+- 索引和派生内容都可重建
+- 可以直接离线浏览页面和图谱
+
 ## 安装方式
 
 ### 作为 Agent Skills 使用
 
-`llm-wiki` 的真实使用方式是把它作为一个 Skill 安装到支持 Agent Skills 的宿主里。
+`ThinkWiki` 的真实使用方式是把它作为一个 skill 安装到支持 Agent Skills 的宿主里。
 
 适用宿主包括但不限于：
 
@@ -84,40 +124,108 @@ llm-wiki/
 
 通用安装原则：
 
-- 保留整个 `llm-wiki` 仓库目录，不要只复制单个脚本
+- 保留整个 `ThinkWiki` 仓库目录，不要只复制单个脚本
 - 把仓库放到宿主约定的 skills 目录中
-- 实际执行入口统一是 `<python-command> scripts/llm-wiki <command> ...`
-- 首次运行时让 `llm-wiki` 自己完成 `.venv` 自举和依赖安装
-
-其中：
-
-- 文中的 `<python-command>` 在 macOS / Linux 上通常是 `python3`
-- 文中的 `<python-command>` 在 Windows 上通常是 `python`
-- macOS / Linux 通常使用 `python3`
-- Windows 通常使用 `python`
+- 实际执行入口统一是 `<python-command> scripts/thinkwiki <command> ...`
+- 首次运行时让 `ThinkWiki` 自己完成 `.venv` 自举和依赖安装
 
 以 Trae 为例，典型结构如下：
 
 ```text
 <workspace>/.trae/skills/
-└── llm-wiki
+└── ThinkWiki
 ```
 
 如果你通过 Git 拉取源码，推荐直接克隆到宿主的 skills 目录，例如：
 
 ```bash
-git clone https://github.com/wzdavid/llm-wiki llm-wiki
-cd llm-wiki
-<python-command> scripts/llm-wiki bootstrap
-<python-command> scripts/llm-wiki doctor --repo-root .
+git clone https://github.com/wzdavid/ThinkWiki ThinkWiki
+cd ThinkWiki
+<python-command> scripts/thinkwiki bootstrap
+<python-command> scripts/thinkwiki doctor --repo-root .
 ```
 
 说明：
 
 - 首次执行 `bootstrap` 时会在仓库内自动创建 `./.venv`
-- 这个本地运行环境仅供 `llm-wiki` 自己使用，不需要手动激活
+- 这个本地运行环境仅供 `ThinkWiki` 自己使用，不需要手动激活
 - `.venv/` 已加入仓库忽略规则，不应提交到 Git
-- 对用户来说，只需要安装 `llm-wiki` 这一个 skill
+- 对用户来说，只需要安装 `ThinkWiki` 这一个 skill
+
+其中：
+
+- 文中的 `<python-command>` 在 macOS / Linux 上通常是 `python3`
+- 文中的 `<python-command>` 在 Windows 上通常是 `python`
+
+## 快速开始
+
+```bash
+<python-command> scripts/thinkwiki bootstrap
+<python-command> scripts/thinkwiki init --root <wiki-root> --title "My Wiki"
+<python-command> scripts/thinkwiki ingest --root <wiki-root> --source <file.pdf>
+<python-command> scripts/thinkwiki ask --root <wiki-root> --question "AI原生团队的核心定义是什么？"
+<python-command> scripts/thinkwiki viewer --root <wiki-root>
+<python-command> scripts/thinkwiki graph --root <wiki-root>
+```
+
+生成后可直接打开：
+
+- `output/index.html`
+- `output/viewer/index.html`
+- `output/graph/index.html`
+
+如果你只记一个入口，优先记住：
+
+- `output/index.html`
+
+## 常见任务
+
+### 导入文件或网页
+
+```bash
+<python-command> scripts/thinkwiki ingest --root <wiki-root> --source <source-file>
+<python-command> scripts/thinkwiki ingest --root <wiki-root> --url "https://example.com/article"
+```
+
+### 只做转换，不入库
+
+```bash
+<python-command> scripts/thinkwiki convert --source <source-file> --output-file <output-file>
+<python-command> scripts/thinkwiki convert --url "https://example.com/article" --output-file <output-file>
+```
+
+### 基于已有知识提问
+
+```bash
+<python-command> scripts/thinkwiki ask --root <wiki-root> --question "AI原生团队的核心定义是什么？"
+```
+
+### 生成综合页
+
+```bash
+<python-command> scripts/thinkwiki digest \
+  --root <wiki-root> \
+  --title "AI原生团队与组织演化" \
+  --source-path wiki/sources/a.md \
+  --source-path wiki/sources/b.md
+```
+
+### 生成概念页或决策页
+
+```bash
+<python-command> scripts/thinkwiki crystallize \
+  --root <wiki-root> \
+  --kind concept \
+  --title "AI原生团队" \
+  --source-path wiki/sources/a.md
+```
+
+### 生成浏览页和知识图谱
+
+```bash
+<python-command> scripts/thinkwiki viewer --root <wiki-root>
+<python-command> scripts/thinkwiki graph --root <wiki-root>
+```
 
 ## 运行依赖
 
@@ -130,13 +238,13 @@ cd llm-wiki
 
 - 当前支持 macOS、Linux 和 Windows
 - Windows 可以直接用 `PowerShell` 或 `cmd` 运行，但前提是系统里有可用的 `python`
-- macOS / Linux 通常使用 `python3 scripts/llm-wiki ...`
-- Windows 通常使用 `python scripts/llm-wiki ...`
+- macOS / Linux 通常使用 `python3 scripts/thinkwiki ...`
+- Windows 通常使用 `python scripts/thinkwiki ...`
 
 运行方式：
 
-- `llm-wiki` 首次运行会自动创建仓库内的 `.venv`
-- 运行库会安装到 `llm-wiki/.venv`
+- `ThinkWiki` 首次运行会自动创建仓库内的 `.venv`
+- 运行库会安装到 `ThinkWiki/.venv`
 - 后续命令默认都通过这个本地运行环境执行
 
 核心运行库：
@@ -154,121 +262,12 @@ cd llm-wiki
 
 根目录 `requirements.txt` 是运行时自举的正式依赖声明，`bootstrap_runtime.py` 会直接读取它来安装本 skill 所需的 Python 运行库。
 
-这些运行库现在作为 `llm-wiki` 自身实现的一部分使用，不再要求用户安装额外 skill，也不要求用户手动 `pip install`。
+`bootstrap` 会尝试安装完整的 Markdown、网页和办公文档转换依赖，并在默认包索引失败后自动回退到可配置镜像或官方 PyPI。
 
-`bootstrap` 现在会尝试安装完整的 Markdown / 网页 / 办公文档转换依赖，并在默认包索引失败后自动回退到可配置镜像或官方 PyPI。
 如果你所在环境需要指定镜像，可以设置：
 
 ```bash
-export LLM_WIKI_PIP_INDEX_URL="https://pypi.org/simple"
-```
-
-如果你想显式预热运行环境，可执行：
-
-```bash
-<python-command> scripts/llm-wiki bootstrap
-```
-
-如果你直接运行 `init / ingest / ask / digest / crystallize` 等命令，`llm-wiki` 也会先自动尝试完成这一步。
-如果某一类办公文档依赖没有安装完整，`ingest` 会给出格式级错误提示，例如 `PDF import dependencies are not ready`。
-
-## 实现要点
-
-- `llm-wiki` 是单一 skill，不依赖其他 companion skills
-- 统一入口是 `scripts/llm-wiki`，由当前 Python 解释器直接调用
-- 首次运行会自动创建仓库内 `.venv`，并从根目录 `requirements.txt` 安装运行库
-- 文件系统和 Markdown 是真相源，索引和派生内容都可重建
-- 本地办公文档转换直接调用 `markitdown` Python 包
-- 网页转换由 Python 抓取、`BeautifulSoup` 和 `markdownify` 完成
-- `ask`、`digest`、`crystallize` 尽量保留来源与证据片段
-- 当前支持 macOS、Linux、Windows，不要求 `bash` 作为唯一入口
-- `doctor` 会按能力维度检查运行时是否具备 `Web / PDF / DOCX / XLSX / XLS / PPTX` 导入能力
-
-## 快速开始
-
-安装好 skill 之后，推荐直接通过 Agent 对话来使用 `llm-wiki`，而不是先手动记命令。
-
-最自然的使用方式通常是：
-
-1. 先告诉 Agent 你的知识库在哪里，或者让它帮你初始化一个新的知识库
-2. 再让 Agent 导入 PDF、DOCX、Markdown、网页或公众号文章
-3. 然后直接围绕这个知识库提问、沉淀总结、生成概念页或决策页
-
-可以直接对 Agent 这样说：
-
-- “帮我在 `<wiki-root>` 初始化一个项目知识库，名字叫 `My Wiki`”
-- “把这个 PDF 导入到知识库里：`<file.pdf>`”
-- “把这个网页整理进知识库：`https://example.com/article`”
-- “基于当前知识库，回答：AI 原生团队的核心定义是什么？”
-- “把这次问答沉淀成一篇 concept 页面”
-
-如果宿主支持工具自动调用，Agent 会直接使用 `llm-wiki` 完成这些动作；对最终用户来说，通常不需要手动输入底层命令。
-
-## 命令参考
-
-下面这些命令主要用于：
-
-- 手动调试
-- 宿主集成排查
-- 不通过对话而直接运行脚本
-
-### 初始化知识库
-
-```bash
-<python-command> scripts/llm-wiki bootstrap
-<python-command> scripts/llm-wiki init --root <wiki-root> --title "My Wiki"
-```
-
-### 导入本地 Markdown
-
-```bash
-<python-command> scripts/llm-wiki ingest --root <wiki-root> --source <source-file>
-```
-
-### 只做转换，不入库
-
-```bash
-<python-command> scripts/llm-wiki convert --source <source-file> --output-file <output-file>
-<python-command> scripts/llm-wiki convert --url "https://example.com/article" --output-file <output-file>
-```
-
-### 导入 PDF / DOCX
-
-```bash
-<python-command> scripts/llm-wiki ingest --root <wiki-root> --source <file.pdf>
-<python-command> scripts/llm-wiki ingest --root <wiki-root> --source <file.docx>
-```
-
-### 导入网页
-
-```bash
-<python-command> scripts/llm-wiki ingest --root <wiki-root> --url "https://example.com/article"
-```
-
-### 基于已有知识提问
-
-```bash
-<python-command> scripts/llm-wiki ask --root <wiki-root> --question "AI原生团队的核心定义是什么？"
-```
-
-### 生成综合页
-
-```bash
-<python-command> scripts/llm-wiki digest \
-  --root <wiki-root> \
-  --title "AI原生团队与组织演化" \
-  --source-path wiki/sources/a.md \
-  --source-path wiki/sources/b.md
-```
-
-### 生成概念页或决策页
-
-```bash
-<python-command> scripts/llm-wiki crystallize \
-  --root <wiki-root> \
-  --kind concept \
-  --title "AI原生团队" \
-  --source-path wiki/sources/a.md
+export THINKWIKI_PIP_INDEX_URL="https://pypi.org/simple"
 ```
 
 ## 推荐使用方式
@@ -279,14 +278,15 @@ export LLM_WIKI_PIP_INDEX_URL="https://pypi.org/simple"
 2. 用 `ingest` 导入资料
 3. 用 `ask` 做基于证据的回答
 4. 对高价值结果再调用 `query / digest / crystallize`
-5. 定期运行 `lint` 和 `doctor`
+5. 用 `viewer` 和 `graph` 生成可直接查看的成果页
+6. 定期运行 `lint` 和 `doctor`
 
 ## 运行体检
 
 建议在首次安装或更换运行环境后执行：
 
 ```bash
-<python-command> scripts/llm-wiki doctor --repo-root .
+<python-command> scripts/thinkwiki doctor --repo-root .
 ```
 
 `doctor` 会输出以下能力状态：
@@ -299,7 +299,17 @@ export LLM_WIKI_PIP_INDEX_URL="https://pypi.org/simple"
 - `XLS import`
 - `PPTX import`
 
-如果某一项显示 `missing ...`，说明对应格式尚不可用，需要重新执行 `bootstrap` 或检查包索引/网络环境。
+如果某一项显示 `missing ...`，说明对应格式尚不可用，需要重新执行 `bootstrap` 或检查包索引或网络环境。
+
+## 版本与发布
+
+版本更新记录见 `CHANGELOG.md`。
+
+升级后建议关注：
+
+- 是否新增输出文件
+- 是否有命令行为调整
+- 是否需要重新执行 `bootstrap`
 
 ## License
 

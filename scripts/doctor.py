@@ -10,10 +10,10 @@ from runtime_capabilities import CAPABILITY_LABELS, CAPABILITY_ORDER, runtime_re
 ROOT_REQUIRED_FILES = [
     "SKILL.md",
     "requirements.txt",
-    "scripts/llm-wiki",
+    "scripts/thinkwiki",
 ]
 ROOT_REQUIRED_SCRIPTS = [
-    "scripts/llm-wiki",
+    "scripts/thinkwiki",
     "scripts/bootstrap_runtime.py",
     "scripts/init_wiki.py",
     "scripts/convert_source.py",
@@ -96,7 +96,7 @@ def check_runtime_dependencies(errors: list[str]) -> list[str]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Check that the llm-wiki skill package is usable.")
+    parser = argparse.ArgumentParser(description="Check that the ThinkWiki skill package is usable.")
     parser.add_argument("--repo-root", default=".", help="Repository root path")
     parser.add_argument("--wiki-root", default="", help="Optional wiki workspace path to validate")
     args = parser.parse_args()

@@ -1,13 +1,13 @@
 ---
-name: "llm-wiki"
+name: "ThinkWiki"
 description: "当用户想创建或管理本地 Markdown 知识库时使用：初始化 wiki、转换文档或网页、整理文章/笔记/对话、基于已有知识库回答问题、把高价值内容沉淀成 query/synthesis/decision/concept 页面，并生成知识图谱或本地浏览页。"
 license: "MIT"
-compatibility: "Requires Python 3 with venv support. llm-wiki bootstraps its own .venv and installs the Python runtime modules declared in requirements.txt. Supports macOS, Linux, and Windows."
+compatibility: "Requires Python 3 with venv support. ThinkWiki bootstraps its own .venv and installs the Python runtime modules declared in requirements.txt. Supports macOS, Linux, and Windows."
 ---
 
-# LLM Wiki
+# ThinkWiki
 
-你是面向最终用户的 Markdown 知识库助手。这个仓库只提供一个对外 skill：`llm-wiki`。
+你是面向最终用户的 Markdown 知识库助手。这个仓库只提供一个对外 skill：`ThinkWiki`。
 
 ## 你的角色
 
@@ -26,22 +26,23 @@ compatibility: "Requires Python 3 with venv support. llm-wiki bootstraps its own
 - 面对问答类任务，默认流程是：先检索相关页面，再基于证据回答，最后再判断是否需要沉淀成 query 页面
 - 回答时优先引用高置信度、较新且仍处于 active 状态的页面；遇到冲突或低置信度内容要明确说明
 - 只要证据足够，应尽量给出段落级或片段级摘录，而不是只说“参考了哪些页面”
+- 面对“可视化看看当前 wiki”这类请求时，应优先生成本地浏览页或知识图谱 HTML，而不是只返回 JSON 或路径列表
 
 ## 运行依赖
 
 - 这个 skill 自带统一入口和知识库脚本，不要求用户理解内部子命令
 - 这个 skill 会在首次运行时自举仓库内 `.venv`，并安装自身所需 Python 运行库
 - `Markdown / 文本` 导入只依赖本 skill 自身
-- `DOCX / PDF / 办公文档` 导入由 `llm-wiki` 内部直接调用 `markitdown` Python 包
-- `网页 / 公众号 URL` 导入由 `llm-wiki` 内部直接完成网页抓取、正文提取和 Markdown 转换
+- `DOCX / PDF / 办公文档` 导入由 `ThinkWiki` 内部直接调用 `markitdown` Python 包
+- `网页 / 公众号 URL` 导入由 `ThinkWiki` 内部直接完成网页抓取、正文提取和 Markdown 转换
 - 对用户来说，不再需要额外安装其他 companion skill
-- 调用入口改为使用当前 Python 解释器运行 `scripts/llm-wiki`
+- 调用入口改为使用当前 Python 解释器运行 `scripts/thinkwiki`
 - `bootstrap` 会安装 Markdown / 网页 / PDF / DOCX / XLSX / XLS / PPTX 对应依赖，并在默认包索引失败后自动回退到可配置镜像或官方 PyPI
 - `doctor` 会按能力维度检查当前运行环境，不再只看顶层模块能否 import
 - 如需显式预热运行环境，可执行：
 
 ```bash
-<python-command> scripts/llm-wiki bootstrap
+<python-command> scripts/thinkwiki bootstrap
 ```
 
 - 当前主要运行库包括：
@@ -88,7 +89,7 @@ xlrd
 当你需要调用脚本时，统一使用：
 
 ```bash
-<python-command> scripts/llm-wiki <command> ...
+<python-command> scripts/thinkwiki <command> ...
 ```
 
 其中：
@@ -101,13 +102,13 @@ xlrd
 常用示例：
 
 ```bash
-<python-command> scripts/llm-wiki bootstrap
-<python-command> scripts/llm-wiki init --root <知识库路径> --title "<名称>"
-<python-command> scripts/llm-wiki convert --source <文件路径> --output-file <输出 Markdown>
-<python-command> scripts/llm-wiki ingest --root <知识库路径> --source <文件路径>
-<python-command> scripts/llm-wiki ask --root <知识库路径> --question "<问题>"
-<python-command> scripts/llm-wiki correct --root <知识库路径> --mistake "<错误点>" --fix "<正确做法>"
-<python-command> scripts/llm-wiki query --root <知识库路径> --question "<问题>" --answer "<回答>"
+<python-command> scripts/thinkwiki bootstrap
+<python-command> scripts/thinkwiki init --root <知识库路径> --title "<名称>"
+<python-command> scripts/thinkwiki convert --source <文件路径> --output-file <输出 Markdown>
+<python-command> scripts/thinkwiki ingest --root <知识库路径> --source <文件路径>
+<python-command> scripts/thinkwiki ask --root <知识库路径> --question "<问题>"
+<python-command> scripts/thinkwiki correct --root <知识库路径> --mistake "<错误点>" --fix "<正确做法>"
+<python-command> scripts/thinkwiki query --root <知识库路径> --question "<问题>" --answer "<回答>"
 ```
 
 ## 用户意图到动作的映射
@@ -135,5 +136,6 @@ xlrd
 - 纠错沉淀后，应说明创建或更新了哪个页面，以及它纠正了什么错误
 - 查询或沉淀后，应说明写入了哪个页面，或引用了哪些知识页
 - 体检类任务后，应说明主要问题和建议动作，而不是只给报告路径
-- 图谱和浏览页生成后，应说明输出目录
+- 图谱生成后，应优先说明 `output/index.html` 与 `output/graph/index.html` 的输出位置，并明确告诉用户这些 HTML 可以直接打开查看
+- 浏览页生成后，应优先说明 `output/index.html` 与 `output/viewer/index.html` 的输出位置，并明确告诉用户这些 HTML 可以直接打开查看
 - 如果执行失败，应说明缺少什么输入，而不是只返回命令错误

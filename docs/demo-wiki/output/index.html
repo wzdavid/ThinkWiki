@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ThinkWiki Outputs</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121935;
+      --text: #edf2ff;
+      --muted: #a8b3cf;
+      --border: rgba(255,255,255,0.1);
+      --accent: #8ab4ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #0b1020 0%, #10172f 100%);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .shell {
+      width: min(880px, 100%);
+      background: rgba(9, 13, 28, 0.86);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 28px;
+    }
+    h1, p { margin-top: 0; }
+    .lead {
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .hero {
+      display: grid;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+    .eyebrow {
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.82rem;
+      margin-bottom: 10px;
+    }
+    .hero-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .hero-title h1 {
+      margin-bottom: 0;
+    }
+    .meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 12px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      background: rgba(255,255,255,0.03);
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .stat {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: 18px;
+      padding: 16px;
+    }
+    .stat strong {
+      display: block;
+      font-size: 1.45rem;
+      margin-bottom: 6px;
+    }
+    .stat span {
+      color: var(--muted);
+    }
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+    .section-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+    .panel {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      border-radius: 18px;
+      padding: 18px;
+    }
+    .panel h2 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+    .panel p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: 18px;
+      padding: 18px;
+    }
+    .card:hover {
+      border-color: rgba(138,180,255,0.55);
+      box-shadow: 0 0 0 1px rgba(138,180,255,0.18);
+    }
+    .card strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 1.05rem;
+    }
+    .card span {
+      display: block;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    code {
+      color: var(--accent);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      word-break: break-word;
+    }
+    .empty {
+      border: 1px dashed var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      color: var(--muted);
+    }
+    .small {
+      padding: 14px;
+      font-size: 0.95rem;
+    }
+    .mini-card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      border: 1px solid var(--border);
+      background: rgba(18, 25, 53, 0.85);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+    .mini-card:last-child {
+      margin-bottom: 0;
+    }
+    .mini-card:hover {
+      border-color: rgba(138,180,255,0.55);
+    }
+    .mini-card strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+    .mini-card span {
+      display: block;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .mini-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+    .mini-type {
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+    }
+    .guide {
+      margin-top: 18px;
+      border: 1px solid rgba(138,180,255,0.22);
+      background: rgba(138,180,255,0.08);
+      border-radius: 18px;
+      padding: 16px 18px;
+    }
+    .guide strong {
+      display: block;
+      margin-bottom: 8px;
+    }
+    .guide span {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    @media (max-width: 720px) {
+      .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .section-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow">Output Hub</div>
+      <div class="hero-title">
+        <h1>Demo Wiki</h1>
+        <div class="meta">
+          <span class="badge">成果入口页</span>
+          <span class="badge">生成日期 2026-06-20</span>
+        </div>
+      </div>
+      <p class="lead">这里汇总当前知识库最容易直接打开的成果页。你可以从这里进入本地浏览页或知识图谱，也能快速确认当前 wiki 的页面规模和图谱状态。</p>
+      <div class="stats">
+        <div class='stat'><strong>2</strong><span>成果页</span></div>
+<div class='stat'><strong>11</strong><span>页面数</span></div>
+<div class='stat'><strong>14</strong><span>图节点</span></div>
+<div class='stat'><strong>44</strong><span>图关系</span></div>
+      </div>
+    </section>
+    <div class="grid">
+      <a class='card' href='viewer/index.html' target='_blank' rel='noopener'><strong>本地浏览页</strong><span>按页面类型、置信度和状态浏览整个 wiki</span><code>viewer/index.html</code></a>
+<a class='card' href='graph/index.html' target='_blank' rel='noopener'><strong>知识图谱</strong><span>查看页面之间的引用、包含和链接关系</span><code>graph/index.html</code></a>
+    </div>
+    <div class="section-grid">
+      <section class="panel">
+        <h2>最近更新</h2>
+        <p>优先从这些页面继续浏览，通常最能代表当前 wiki 的最新整理结果。</p>
+        <a class='mini-card' href='viewer/index.html#page=wiki/queries/what-makes-ai-native-team.md' target='_blank' rel='noopener'><div class='mini-meta'><span class='mini-type'>query</span><span>2026-06-19</span></div><strong>What Makes an AI Native Team</strong><span>Saved query summarizing the defining traits of an AI native delivery team.</span></a>
+<a class='mini-card' href='viewer/index.html#page=wiki/sources/review-checklist.md' target='_blank' rel='noopener'><div class='mini-meta'><span class='mini-type'>source</span><span>2026-06-19</span></div><strong>Review Checklist</strong><span>A source page explaining how human review, acceptance criteria, and escalation paths fit together.</span></a>
+<a class='mini-card' href='viewer/index.html#page=wiki/sources/platform-spec.md' target='_blank' rel='noopener'><div class='mini-meta'><span class='mini-type'>source</span><span>2026-06-19</span></div><strong>Platform Spec</strong><span>A source page describing why execution specs and context must be treated as one delivery system.</span></a>
+      </section>
+      <section class="panel">
+        <h2>代表页面</h2>
+        <p>优先展示概念页和决策页，帮助你快速理解这个知识库沉淀出的关键结论。</p>
+        <a class='mini-card' href='viewer/index.html#page=wiki/concepts/execution-spec.md' target='_blank' rel='noopener'><div class='mini-meta'><span class='mini-type'>concept</span><span>2026-06-19</span></div><strong>Execution Spec</strong><span>A reusable specification that binds task framing, context, policy, and review expectations together.</span></a>
+<a class='mini-card' href='viewer/index.html#page=wiki/decisions/execution-policy.md' target='_blank' rel='noopener'><div class='mini-meta'><span class='mini-type'>decision</span><span>2026-06-19</span></div><strong>Execution Policy</strong><span>Decision page that recommends treating context and execution as first-class platform capabilities.</span></a>
+<a class='mini-card' href='viewer/index.html#page=wiki/decisions/context-budget.md' target='_blank' rel='noopener'><div class='mini-meta'><span class='mini-type'>decision</span><span>2026-06-19</span></div><strong>Context Budget</strong><span>Decision page that limits context sprawl and requires explicit budget ownership in prompts and tools.</span></a>
+      </section>
+    </div>
+    <div class="guide">
+      <strong>从这里开始</strong>
+      <span>先打开本地浏览页阅读页面，再进入知识图谱查看关系。如果你刚导入了新资料，建议重新运行 viewer 和 graph 以刷新成果页。</span>
+    </div>
+  </main>
+</body>
+</html>

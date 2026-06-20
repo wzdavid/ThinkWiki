@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 
 from crystallize import first_meaningful_line, write_page
-from utils import find_repo_root, normalize_repo_path, parse_frontmatter, read_text
+from utils import file_uri, find_repo_root, normalize_repo_path, parse_frontmatter, read_text, refresh_output_home_if_present
 
 BLOCKED_SECTIONS = {
     "Connections",
@@ -641,7 +641,11 @@ def main() -> int:
         update=args.update,
         merge_mode=args.merge_mode,
     )
+    output_home = refresh_output_home_if_present(root)
     print(f"{action.title()} {page_path.relative_to(root).as_posix()}")
+    if output_home is not None:
+        print("Output hub: output/index.html")
+        print(f"Output hub URI: {file_uri(output_home)}")
     return 0
 
 

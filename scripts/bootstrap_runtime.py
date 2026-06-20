@@ -11,12 +11,12 @@ from pathlib import Path
 from runtime_capabilities import CAPABILITY_LABELS, CAPABILITY_ORDER
 
 PYPI_SIMPLE_URL = "https://pypi.org/simple"
-DEFAULT_PIP_TIMEOUT = os.environ.get("LLM_WIKI_PIP_TIMEOUT", "300")
-DEFAULT_PIP_RETRIES = os.environ.get("LLM_WIKI_PIP_RETRIES", "2")
+DEFAULT_PIP_TIMEOUT = os.environ.get("THINKWIKI_PIP_TIMEOUT", "300")
+DEFAULT_PIP_RETRIES = os.environ.get("THINKWIKI_PIP_RETRIES", "2")
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Bootstrap the llm-wiki runtime environment.")
+    parser = argparse.ArgumentParser(description="Bootstrap the ThinkWiki runtime environment.")
     parser.add_argument("--repo-root", default="", help="Optional repository root. Defaults to the skill root.")
     parser.add_argument("--check", action="store_true", help="Only check whether the runtime is ready.")
     parser.add_argument("--quiet", action="store_true", help="Reduce bootstrap output.")
@@ -100,7 +100,7 @@ def create_venv(repo_root: Path, quiet: bool) -> Path:
     venv_dir = repo_root / ".venv"
     if not venv_dir.exists():
         if not quiet:
-            print(f"[llm-wiki] Creating runtime venv at {venv_dir}")
+            print(f"[ThinkWiki] Creating runtime venv at {venv_dir}")
         builder = venv.EnvBuilder(with_pip=True, clear=False, upgrade=False)
         builder.create(venv_dir)
     python_bin = venv_python(repo_root)
@@ -111,7 +111,7 @@ def create_venv(repo_root: Path, quiet: bool) -> Path:
 
 def configured_index_urls() -> list[str]:
     urls: list[str] = []
-    configured = os.environ.get("LLM_WIKI_PIP_INDEX_URL", "").strip()
+    configured = os.environ.get("THINKWIKI_PIP_INDEX_URL", "").strip()
     if configured:
         urls.append(configured)
     if PYPI_SIMPLE_URL not in urls:
@@ -124,7 +124,7 @@ def install_requirements(repo_root: Path, python_bin: Path, quiet: bool) -> None
     if not req_path.exists():
         raise SystemExit(f"requirements.txt not found: {req_path}")
     if not quiet:
-        print(f"[llm-wiki] Installing runtime dependencies from {req_path}")
+        print(f"[ThinkWiki] Installing runtime dependencies from {req_path}")
     base_cmd = [
         str(python_bin),
         "-m",
@@ -145,29 +145,29 @@ def install_requirements(repo_root: Path, python_bin: Path, quiet: bool) -> None
     last_error = "pip install failed"
     for index, (label, install_cmd) in enumerate(commands):
         if not quiet and index > 0:
-            print(f"[llm-wiki] Default package index failed, retrying via {label.split()[-1]}")
+            print(f"[ThinkWiki] Default package index failed, retrying via {label.split()[-1]}")
         result = subprocess.run(install_cmd, capture_output=quiet, text=True)
         if result.returncode == 0:
             return
         last_error = (result.stderr or result.stdout or "pip install failed").strip()
-    raise SystemExit(f"Failed to install llm-wiki runtime dependencies: {last_error}")
+    raise SystemExit(f"Failed to install ThinkWiki runtime dependencies: {last_error}")
 
 
 def ensure_runtime(repo_root: Path, quiet: bool) -> Path:
     python_bin = create_venv(repo_root, quiet)
     if runtime_ready_with_python(repo_root, python_bin):
         if not quiet:
-            print(f"[llm-wiki] Runtime ready: {python_bin}")
+            print(f"[ThinkWiki] Runtime ready: {python_bin}")
         return python_bin
     install_requirements(repo_root, python_bin, quiet)
     ready, report = runtime_report_with_python(repo_root, python_bin)
     if not ready:
         raise SystemExit(
-            "llm-wiki runtime bootstrap completed, but required modules are still unavailable: "
+            "ThinkWiki runtime bootstrap completed, but required modules are still unavailable: "
             f"{format_missing_report(report)}"
         )
     if not quiet:
-        print(f"[llm-wiki] Runtime ready: {python_bin}")
+        print(f"[ThinkWiki] Runtime ready: {python_bin}")
     return python_bin
 
 

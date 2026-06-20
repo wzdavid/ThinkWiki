@@ -11,6 +11,7 @@ from utils import (
     append_log,
     collect_wiki_pages,
     extract_summary,
+    file_uri,
     find_repo_root,
     frontmatter_list,
     load_template,
@@ -25,6 +26,7 @@ from utils import (
     today_str,
     unique_path,
     write_text,
+    refresh_output_home_if_present,
 )
 
 TEMPLATE_BY_KIND = {
@@ -1050,7 +1052,11 @@ def main() -> int:
         confidence=args.confidence,
         status=args.status,
     )
+    output_home = refresh_output_home_if_present(root)
     print(f"{action.title()} {page_path.relative_to(root).as_posix()}")
+    if output_home is not None:
+        print("Output hub: output/index.html")
+        print(f"Output hub URI: {file_uri(output_home)}")
     return 0
 
 

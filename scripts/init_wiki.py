@@ -4,11 +4,11 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from utils import append_log, ensure_runtime_dirs, load_template, render_template, today_str, write_text
+from utils import append_log, ensure_runtime_dirs, load_template, output_access_lines, render_template, today_str, write_text
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Initialize a new portable LLM Wiki workspace.")
+    parser = argparse.ArgumentParser(description="Initialize a new portable ThinkWiki workspace.")
     parser.add_argument("--root", default=".", help="Target wiki root path")
     parser.add_argument("--title", default="My Knowledge Base", help="Knowledge base title")
     parser.add_argument("--language", default="中文", help="Primary language label")
@@ -38,6 +38,8 @@ def main() -> int:
         "- next: run ingest or add your first source",
     ])
     print(f"Initialized wiki at {root}")
+    for line in output_access_lines(root):
+        print(line)
     return 0
 
 

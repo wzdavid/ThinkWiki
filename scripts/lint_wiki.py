@@ -184,7 +184,7 @@ def clean_page_body(page: Path) -> tuple[bool, str]:
 
 
 def check_external_link(url: str, timeout: float) -> str | None:
-    headers = {"User-Agent": "llm-wiki-lint/1.0"}
+    headers = {"User-Agent": "thinkwiki-lint/1.0"}
     try:
         req = request.Request(url, headers=headers, method="HEAD")
         with request.urlopen(req, timeout=timeout) as response:

@@ -1,0 +1,414 @@
+{
+  "generated_at": "2026-06-20",
+  "nodes": [
+    {
+      "id": "raw/articles/eval-loops.md",
+      "label": "eval-loops",
+      "type": "raw",
+      "summary": "",
+      "confidence": "",
+      "status": "",
+      "updated": "",
+      "path": "raw/articles/eval-loops.md",
+      "sources": []
+    },
+    {
+      "id": "raw/articles/platform-spec.md",
+      "label": "platform-spec",
+      "type": "raw",
+      "summary": "",
+      "confidence": "",
+      "status": "",
+      "updated": "",
+      "path": "raw/articles/platform-spec.md",
+      "sources": []
+    },
+    {
+      "id": "raw/articles/review-checklist.md",
+      "label": "review-checklist",
+      "type": "raw",
+      "summary": "",
+      "confidence": "",
+      "status": "",
+      "updated": "",
+      "path": "raw/articles/review-checklist.md",
+      "sources": []
+    },
+    {
+      "id": "wiki/concepts/ai-native-team.md",
+      "label": "AI Native Team",
+      "type": "concept",
+      "summary": "A team model that treats models, context, and workflow as one operating system for delivery.",
+      "confidence": "verified",
+      "status": "active",
+      "updated": "2026-06-19",
+      "path": "wiki/concepts/ai-native-team.md",
+      "sources": [
+        "wiki/sources/platform-spec.md",
+        "wiki/topics/model-platform.md",
+        "wiki/topics/eval-loops.md"
+      ]
+    },
+    {
+      "id": "wiki/concepts/execution-spec.md",
+      "label": "Execution Spec",
+      "type": "concept",
+      "summary": "A reusable specification that binds task framing, context, policy, and review expectations together.",
+      "confidence": "verified",
+      "status": "active",
+      "updated": "2026-06-19",
+      "path": "wiki/concepts/execution-spec.md",
+      "sources": [
+        "wiki/sources/platform-spec.md",
+        "wiki/sources/review-checklist.md"
+      ]
+    },
+    {
+      "id": "wiki/decisions/context-budget.md",
+      "label": "Context Budget",
+      "type": "decision",
+      "summary": "Decision page that limits context sprawl and requires explicit budget ownership in prompts and tools.",
+      "confidence": "verified",
+      "status": "active",
+      "updated": "2026-06-19",
+      "path": "wiki/decisions/context-budget.md",
+      "sources": [
+        "wiki/sources/eval-loops.md",
+        "wiki/concepts/execution-spec.md"
+      ]
+    },
+    {
+      "id": "wiki/decisions/execution-policy.md",
+      "label": "Execution Policy",
+      "type": "decision",
+      "summary": "Decision page that recommends treating context and execution as first-class platform capabilities.",
+      "confidence": "verified",
+      "status": "active",
+      "updated": "2026-06-19",
+      "path": "wiki/decisions/execution-policy.md",
+      "sources": [
+        "wiki/concepts/ai-native-team.md",
+        "wiki/concepts/execution-spec.md"
+      ]
+    },
+    {
+      "id": "wiki/queries/what-makes-ai-native-team.md",
+      "label": "What Makes an AI Native Team",
+      "type": "query",
+      "summary": "Saved query summarizing the defining traits of an AI native delivery team.",
+      "confidence": "mixed",
+      "status": "active",
+      "updated": "2026-06-19",
+      "path": "wiki/queries/what-makes-ai-native-team.md",
+      "sources": [
+        "wiki/concepts/ai-native-team.md",
+        "wiki/decisions/execution-policy.md"
+      ]
+    },
+    {
+      "id": "wiki/sources/eval-loops.md",
+      "label": "Eval Loop Notes",
+      "type": "source",
+      "summary": "Notes from an internal workshop on evaluation loops, review lanes, and release confidence.",
+      "confidence": "extracted",
+      "status": "active",
+      "updated": "2026-06-19",
+      "path": "wiki/sources/eval-loops.md",
+      "sources": [
+        "raw/articles/eval-loops.md"
+      ]
+    },
+    {
+      "id": "wiki/sources/platform-spec.md",
+      "label": "Platform Spec",
+      "type": "source",
+      "summary": "A source page describing why execution specs and context must be treated as one delivery system.",
+      "confidence": "extracted",
+      "status": "active",
+      "updated": "2026-06-19",
+      "path": "wiki/sources/platform-spec.md",
+      "sources": [
+        "raw/articles/platform-spec.md"
+      ]
+    },
+    {
+      "id": "wiki/sources/review-checklist.md",
+      "label": "Review Checklist",
+      "type": "source",
+      "summary": "A source page explaining how human review, acceptance criteria, and escalation paths fit together.",
+      "confidence": "extracted",
+      "status": "active",
+      "updated": "2026-06-19",
+      "path": "wiki/sources/review-checklist.md",
+      "sources": [
+        "raw/articles/review-checklist.md"
+      ]
+    },
+    {
+      "id": "wiki/syntheses/delivery-system.md",
+      "label": "Delivery System Synthesis",
+      "type": "synthesis",
+      "summary": "Synthesis page summarizing how source, topic, concept, and decision pages reinforce one another.",
+      "confidence": "mixed",
+      "status": "active",
+      "updated": "2026-06-19",
+      "path": "wiki/syntheses/delivery-system.md",
+      "sources": [
+        "wiki/sources/platform-spec.md",
+        "wiki/sources/eval-loops.md",
+        "wiki/concepts/ai-native-team.md",
+        "wiki/decisions/execution-policy.md"
+      ]
+    },
+    {
+      "id": "wiki/topics/eval-loops.md",
+      "label": "Eval Loops",
+      "type": "topic",
+      "summary": "Topic page about review lanes, regression checks, and feedback loops for model releases.",
+      "confidence": "mixed",
+      "status": "active",
+      "updated": "2026-06-19",
+      "path": "wiki/topics/eval-loops.md",
+      "sources": [
+        "wiki/sources/eval-loops.md",
+        "wiki/sources/review-checklist.md"
+      ]
+    },
+    {
+      "id": "wiki/topics/model-platform.md",
+      "label": "Model Platform",
+      "type": "topic",
+      "summary": "Topic page for reusable context, evaluation workflows, and internal tooling.",
+      "confidence": "mixed",
+      "status": "active",
+      "updated": "2026-06-19",
+      "path": "wiki/topics/model-platform.md",
+      "sources": [
+        "wiki/sources/platform-spec.md",
+        "wiki/sources/eval-loops.md"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "wiki/concepts/ai-native-team.md",
+      "target": "wiki/concepts/execution-spec.md",
+      "type": "links_to"
+    },
+    {
+      "source": "wiki/concepts/ai-native-team.md",
+      "target": "wiki/decisions/execution-policy.md",
+      "type": "links_to"
+    },
+    {
+      "source": "wiki/concepts/ai-native-team.md",
+      "target": "wiki/topics/eval-loops.md",
+      "type": "links_to"
+    },
+    {
+      "source": "wiki/concepts/ai-native-team.md",
+      "target": "wiki/topics/model-platform.md",
+      "type": "links_to"
+    },
+    {
+      "source": "wiki/concepts/ai-native-team.md",
+      "target": "wiki/sources/platform-spec.md",
+      "type": "references"
+    },
+    {
+      "source": "wiki/concepts/ai-native-team.md",
+      "target": "wiki/topics/eval-loops.md",
+      "type": "references"
+    },
+    {
+      "source": "wiki/concepts/ai-native-team.md",
+      "target": "wiki/topics/model-platform.md",
+      "type": "references"
+    },
+    {
+      "source": "wiki/concepts/execution-spec.md",
+      "target": "wiki/concepts/ai-native-team.md",
+      "type": "links_to"
+    },
+    {
+      "source": "wiki/concepts/execution-spec.md",
+      "target": "wiki/decisions/context-budget.md",
+      "type": "links_to"
+    },
+    {
+      "source": "wiki/concepts/execution-spec.md",
+      "target": "wiki/decisions/execution-policy.md",
+      "type": "links_to"
+    },
+    {
+      "source": "wiki/concepts/execution-spec.md",
+      "target": "wiki/sources/platform-spec.md",
+      "type": "references"
+    },
+    {
+      "source": "wiki/concepts/execution-spec.md",
+      "target": "wiki/sources/review-checklist.md",
+      "type": "references"
+    },
+    {
+      "source": "wiki/decisions/context-budget.md",
+      "target": "wiki/concepts/execution-spec.md",
+      "type": "references"
+    },
+    {
+      "source": "wiki/decisions/context-budget.md",
+      "target": "wiki/sources/eval-loops.md",
+      "type": "references"
+    },
+    {
+      "source": "wiki/decisions/execution-policy.md",
+      "target": "wiki/concepts/ai-native-team.md",
+      "type": "references"
+    },
+    {
+      "source": "wiki/decisions/execution-policy.md",
+      "target": "wiki/concepts/execution-spec.md",
+      "type": "references"
+    },
+    {
+      "source": "wiki/queries/what-makes-ai-native-team.md",
+      "target": "wiki/concepts/ai-native-team.md",
+      "type": "links_to"
+    },
+    {
+      "source": "wiki/queries/what-makes-ai-native-team.md",
+      "target": "wiki/decisions/execution-policy.md",
+      "type": "links_to"
+    },
+    {
+      "source": "wiki/queries/what-makes-ai-native-team.md",
+      "target": "wiki/concepts/ai-native-team.md",
+      "type": "references"
+    },
+    {
+      "source": "wiki/queries/what-makes-ai-native-team.md",
+      "target": "wiki/decisions/execution-policy.md",
+      "type": "references"
+    },
+    {
+      "source": "wiki/sources/eval-loops.md",
+      "target": "raw/articles/eval-loops.md",
+      "type": "cites"
+    },
+    {
+      "source": "wiki/sources/eval-loops.md",
+      "target": "wiki/decisions/context-budget.md",
+      "type": "links_to"
+    },
+    {
+      "source": "wiki/sources/eval-loops.md",
+      "target": "wiki/topics/eval-loops.md",
+      "type": "links_to"
+    },
+    {
+      "source": "wiki/sources/platform-spec.md",
+      "target": "raw/articles/platform-spec.md",
+      "type": "cites"
+    },
+    {
+      "source": "wiki/sources/platform-spec.md",
+      "target": "wiki/concepts/ai-native-team.md",
+      "type": "links_to"
+    },
+    {
+      "source": "wiki/sources/platform-spec.md",
+      "target": "wiki/concepts/execution-spec.md",
+      "type": "links_to"
+    },
+    {
+      "source": "wiki/sources/platform-spec.md",
+      "target": "wiki/topics/model-platform.md",
+      "type": "links_to"
+    },
+    {
+      "source": "wiki/sources/review-checklist.md",
+      "target": "raw/articles/review-checklist.md",
+      "type": "cites"
+    },
+    {
+      "source": "wiki/sources/review-checklist.md",
+      "target": "wiki/concepts/ai-native-team.md",
+      "type": "links_to"
+    },
+    {
+      "source": "wiki/sources/review-checklist.md",
+      "target": "wiki/decisions/execution-policy.md",
+      "type": "links_to"
+    },
+    {
+      "source": "wiki/syntheses/delivery-system.md",
+      "target": "wiki/concepts/ai-native-team.md",
+      "type": "references"
+    },
+    {
+      "source": "wiki/syntheses/delivery-system.md",
+      "target": "wiki/decisions/execution-policy.md",
+      "type": "references"
+    },
+    {
+      "source": "wiki/syntheses/delivery-system.md",
+      "target": "wiki/sources/eval-loops.md",
+      "type": "references"
+    },
+    {
+      "source": "wiki/syntheses/delivery-system.md",
+      "target": "wiki/sources/platform-spec.md",
+      "type": "references"
+    },
+    {
+      "source": "wiki/topics/eval-loops.md",
+      "target": "wiki/sources/eval-loops.md",
+      "type": "includes"
+    },
+    {
+      "source": "wiki/topics/eval-loops.md",
+      "target": "wiki/sources/review-checklist.md",
+      "type": "includes"
+    },
+    {
+      "source": "wiki/topics/eval-loops.md",
+      "target": "wiki/decisions/context-budget.md",
+      "type": "links_to"
+    },
+    {
+      "source": "wiki/topics/eval-loops.md",
+      "target": "wiki/sources/eval-loops.md",
+      "type": "links_to"
+    },
+    {
+      "source": "wiki/topics/eval-loops.md",
+      "target": "wiki/sources/review-checklist.md",
+      "type": "links_to"
+    },
+    {
+      "source": "wiki/topics/model-platform.md",
+      "target": "wiki/sources/eval-loops.md",
+      "type": "includes"
+    },
+    {
+      "source": "wiki/topics/model-platform.md",
+      "target": "wiki/sources/platform-spec.md",
+      "type": "includes"
+    },
+    {
+      "source": "wiki/topics/model-platform.md",
+      "target": "wiki/concepts/execution-spec.md",
+      "type": "links_to"
+    },
+    {
+      "source": "wiki/topics/model-platform.md",
+      "target": "wiki/sources/eval-loops.md",
+      "type": "links_to"
+    },
+    {
+      "source": "wiki/topics/model-platform.md",
+      "target": "wiki/sources/platform-spec.md",
+      "type": "links_to"
+    }
+  ]
+}

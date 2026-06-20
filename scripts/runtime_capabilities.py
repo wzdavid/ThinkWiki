@@ -110,6 +110,6 @@ def missing_dependency_message(source_path: Path, items: list[dict[str, str]]) -
     return (
         f"{label} dependencies are not ready for `{source_path.name}`. "
         f"Missing Python modules: {modules}. "
-        "Run `python scripts/llm-wiki bootstrap` again after fixing package index or network access, "
+        "Run `python scripts/thinkwiki bootstrap` again after fixing package index or network access, "
         "or install the runtime packages declared in `requirements.txt`."
     )

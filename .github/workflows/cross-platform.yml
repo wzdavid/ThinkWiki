@@ -22,7 +22,13 @@ jobs:
           python-version: "3.12"
 
       - name: Bootstrap runtime
-        run: python scripts/llm-wiki bootstrap
+        run: python scripts/thinkwiki bootstrap
 
       - name: Run doctor
-        run: python scripts/llm-wiki doctor --repo-root .
+        run: python scripts/thinkwiki doctor --repo-root .
+
+      - name: Show entry help
+        run: python scripts/thinkwiki --help
+
+      - name: Run regression tests
+        run: python -m unittest discover -s tests -p "test_thinkwiki.py"

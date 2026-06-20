@@ -12,6 +12,7 @@ from utils import (
     append_log,
     collect_wiki_pages,
     extract_summary,
+    file_uri,
     find_repo_root,
     is_external_link,
     markdown_links,
@@ -19,6 +20,7 @@ from utils import (
     read_text,
     today_str,
     write_text,
+    write_output_home,
 )
 
 
@@ -191,7 +193,7 @@ def render_html(payload: dict[str, object]) -> str:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>LLM Wiki Viewer</title>
+  <title>ThinkWiki Viewer</title>
   <style>
     :root {{
       color-scheme: light dark;
@@ -395,7 +397,7 @@ def render_html(payload: dict[str, object]) -> str:
 <body>
   <div class="layout">
     <aside class="sidebar">
-      <h1>LLM Wiki</h1>
+      <h1>ThinkWiki</h1>
       <p class="lead">Static viewer for <strong>{root_name}</strong>. Open this file locally to browse compiled wiki pages.</p>
       <div class="controls">
         <input id="search" type="search" placeholder="Search pages, tags, or summary">
@@ -433,6 +435,7 @@ def render_html(payload: dict[str, object]) -> str:
       <div class="hero">
         <div>
           <p class="lead">A lightweight, zero-dependency wiki browser. It gives you a searchable overview, page summaries, source paths, and links without running a server.</p>
+          <p class="lead"><a href="../graph/index.html" target="_blank" rel="noopener">Open graph view</a> · <a href="../index.html" target="_blank" rel="noopener">Open output hub</a></p>
         </div>
       </div>
       <section id="viewer"></section>
@@ -448,6 +451,25 @@ def render_html(payload: dict[str, object]) -> str:
     const viewerEl = document.getElementById("viewer");
     let activeId = payload.pages.length ? payload.pages[0].id : null;
     let activeSectionAnchor = "";
+
+    function readHashState() {{
+      const raw = String(window.location.hash || "").replace(/^#/, "");
+      const params = new URLSearchParams(raw);
+      return {{
+        pageId: params.get("page") || "",
+        sectionAnchor: params.get("section") || "",
+      }};
+    }}
+
+    function updateHash(pageId, sectionAnchor = "") {{
+      const params = new URLSearchParams();
+      if (pageId) params.set("page", pageId);
+      if (sectionAnchor) params.set("section", sectionAnchor);
+      const nextHash = params.toString();
+      if ((window.location.hash || "").replace(/^#/, "") !== nextHash) {{
+        window.location.hash = nextHash;
+      }}
+    }}
 
     function confidenceRank(value) {{
       const order = {{ verified: 4, extracted: 3, mixed: 2, inferred: 1 }};
@@ -617,6 +639,7 @@ def render_html(payload: dict[str, object]) -> str:
       if (!targetPage) return;
       activeId = targetPage.id;
       activeSectionAnchor = parsed.sectionAnchor;
+      updateHash(activeId, activeSectionAnchor);
       refresh();
     }}
 
@@ -651,6 +674,7 @@ def render_html(payload: dict[str, object]) -> str:
         viewerEl.innerHTML = `<div class="empty">No matching pages.</div>`;
         return;
       }}
+      const graphHref = "../graph/index.html#node=" + encodeURIComponent(page.id);
       viewerEl.innerHTML = `
         <div class="meta">
           <span class="chip">${{escapeHtml(page.section)}}</span>
@@ -663,6 +687,7 @@ def render_html(payload: dict[str, object]) -> str:
         <div class="card">
           <h2>Path</h2>
           <p>${{escapeHtml(page.id)}}</p>
+          <p><a class="ref-button" href="${{graphHref}}" target="_blank" rel="noopener">Open graph context</a></p>
         </div>
         <div class="card">
           <h2>Excerpt</h2>
@@ -704,6 +729,7 @@ def render_html(payload: dict[str, object]) -> str:
         activeId = pages.length ? pages[0].id : null;
         activeSectionAnchor = "";
       }}
+      updateHash(activeId || "", activeSectionAnchor);
       renderNav(pages);
       renderPage(pages.find((page) => page.id === activeId) || null);
     }}
@@ -712,6 +738,19 @@ def render_html(payload: dict[str, object]) -> str:
     confidenceEl.addEventListener("change", refresh);
     statusEl.addEventListener("change", refresh);
     sortEl.addEventListener("change", refresh);
+    window.addEventListener("hashchange", () => {{
+      const nextState = readHashState();
+      if (nextState.pageId && payload.pages.some((page) => page.id === nextState.pageId)) {{
+        activeId = nextState.pageId;
+        activeSectionAnchor = nextState.sectionAnchor;
+      }}
+      refresh();
+    }});
+    const initialState = readHashState();
+    if (initialState.pageId && payload.pages.some((page) => page.id === initialState.pageId)) {{
+      activeId = initialState.pageId;
+      activeSectionAnchor = initialState.sectionAnchor;
+    }}
     refresh();
   </script>
 </body>
@@ -727,8 +766,11 @@ def main() -> int:
     root = find_repo_root(Path(args.root))
     payload = build_payload(root)
     viewer_dir = root / "output" / "viewer"
-    write_text(viewer_dir / "viewer.json", json.dumps(payload, ensure_ascii=False, indent=2))
-    write_text(viewer_dir / "index.html", render_html(payload))
+    viewer_json_path = viewer_dir / "viewer.json"
+    viewer_html_path = viewer_dir / "index.html"
+    write_text(viewer_json_path, json.dumps(payload, ensure_ascii=False, indent=2))
+    write_text(viewer_html_path, render_html(payload))
+    output_home = write_output_home(root)
 
     append_log(
         root,
@@ -736,9 +778,15 @@ def main() -> int:
         [
             "- output: output/viewer/index.html",
             "- metadata: output/viewer/viewer.json",
+            "- hub: output/index.html",
         ],
     )
     print(f"Built viewer for {payload['pageCount']} pages")
+    print("Viewer metadata: output/viewer/viewer.json")
+    print("Viewer page: output/viewer/index.html")
+    print(f"Viewer page URI: {file_uri(viewer_html_path)}")
+    print("Output hub: output/index.html")
+    print(f"Output hub URI: {file_uri(output_home)}")
     return 0
 
 

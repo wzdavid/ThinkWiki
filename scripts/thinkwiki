@@ -33,10 +33,10 @@ HELP_COMMANDS = {"help", "-h", "--help"}
 
 
 def usage() -> str:
-    return """LLM Wiki unified entry
+    return """ThinkWiki unified entry
 
 Usage:
-  python scripts/llm-wiki <command> [args]
+  python scripts/thinkwiki <command> [args]
 
 Commands:
   bootstrap       -> bootstrap_runtime.py
@@ -55,18 +55,18 @@ Commands:
   doctor          -> doctor.py
 
 Examples:
-  python scripts/llm-wiki bootstrap
-  python scripts/llm-wiki init --root /path/to/my-wiki --title "My Wiki"
-  python scripts/llm-wiki convert --source /path/to/file.pdf --output-file /path/to/file.md
-  python scripts/llm-wiki ingest --root /path/to/my-wiki --source /path/to/file.md --topic "AI Memory"
-  python scripts/llm-wiki ask --root /path/to/my-wiki --question "What did we already conclude about AI memory?"
-  python scripts/llm-wiki correct --root /path/to/my-wiki --mistake "Confused context_length and max_tokens" --fix "Treat them as separate limits"
-  python scripts/llm-wiki doctor --repo-root .
+  python scripts/thinkwiki bootstrap
+  python scripts/thinkwiki init --root /path/to/my-wiki --title "My Wiki"
+  python scripts/thinkwiki convert --source /path/to/file.pdf --output-file /path/to/file.md
+  python scripts/thinkwiki ingest --root /path/to/my-wiki --source /path/to/file.md --topic "AI Memory"
+  python scripts/thinkwiki ask --root /path/to/my-wiki --question "What did we already conclude about AI memory?"
+  python scripts/thinkwiki correct --root /path/to/my-wiki --mistake "Confused context_length and max_tokens" --fix "Treat them as separate limits"
+  python scripts/thinkwiki doctor --repo-root .
 """
 
 
 def ensure_runtime(command: str) -> None:
-    if os.environ.get("LLM_WIKI_SKIP_BOOTSTRAP") == "1":
+    if os.environ.get("THINKWIKI_SKIP_BOOTSTRAP") == "1":
         return
     if command in HELP_COMMANDS or command == "bootstrap":
         return

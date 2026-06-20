@@ -7,7 +7,18 @@ from pathlib import Path
 import re
 
 from crystallize import first_meaningful_line, text_tokens, write_page
-from utils import extract_summary, find_repo_root, normalize_repo_path, parse_frontmatter, read_text, today_str, collect_wiki_pages, write_text
+from utils import (
+    collect_wiki_pages,
+    extract_summary,
+    file_uri,
+    find_repo_root,
+    normalize_repo_path,
+    parse_frontmatter,
+    read_text,
+    refresh_output_home_if_present,
+    today_str,
+    write_text,
+)
 
 CONFIDENCE_BONUS = {
     "verified": 8,
@@ -758,6 +769,16 @@ def main() -> int:
             "## Query Page",
             "",
             f"- {action}: {page_path.relative_to(root).as_posix()}",
+        ])
+
+    output_home = refresh_output_home_if_present(root)
+    if output_home is not None:
+        lines.extend([
+            "",
+            "## Output Pages",
+            "",
+            "- Open output/index.html to quickly access the local viewer and graph pages.",
+            f"- file URI: {file_uri(output_home)}",
         ])
 
     print("\n".join(lines))

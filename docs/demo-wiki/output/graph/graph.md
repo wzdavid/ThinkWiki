@@ -1,0 +1,66 @@
+# Knowledge Graph
+
+- Nodes: 14
+- Edges: 44
+
+## Nodes
+- raw: eval-loops (raw/articles/eval-loops.md)
+- raw: platform-spec (raw/articles/platform-spec.md)
+- raw: review-checklist (raw/articles/review-checklist.md)
+- concept: AI Native Team (wiki/concepts/ai-native-team.md)
+- concept: Execution Spec (wiki/concepts/execution-spec.md)
+- decision: Context Budget (wiki/decisions/context-budget.md)
+- decision: Execution Policy (wiki/decisions/execution-policy.md)
+- query: What Makes an AI Native Team (wiki/queries/what-makes-ai-native-team.md)
+- source: Eval Loop Notes (wiki/sources/eval-loops.md)
+- source: Platform Spec (wiki/sources/platform-spec.md)
+- source: Review Checklist (wiki/sources/review-checklist.md)
+- synthesis: Delivery System Synthesis (wiki/syntheses/delivery-system.md)
+- topic: Eval Loops (wiki/topics/eval-loops.md)
+- topic: Model Platform (wiki/topics/model-platform.md)
+
+## Edges
+- wiki/concepts/ai-native-team.md --links_to--> wiki/concepts/execution-spec.md
+- wiki/concepts/ai-native-team.md --links_to--> wiki/decisions/execution-policy.md
+- wiki/concepts/ai-native-team.md --links_to--> wiki/topics/eval-loops.md
+- wiki/concepts/ai-native-team.md --links_to--> wiki/topics/model-platform.md
+- wiki/concepts/ai-native-team.md --references--> wiki/sources/platform-spec.md
+- wiki/concepts/ai-native-team.md --references--> wiki/topics/eval-loops.md
+- wiki/concepts/ai-native-team.md --references--> wiki/topics/model-platform.md
+- wiki/concepts/execution-spec.md --links_to--> wiki/concepts/ai-native-team.md
+- wiki/concepts/execution-spec.md --links_to--> wiki/decisions/context-budget.md
+- wiki/concepts/execution-spec.md --links_to--> wiki/decisions/execution-policy.md
+- wiki/concepts/execution-spec.md --references--> wiki/sources/platform-spec.md
+- wiki/concepts/execution-spec.md --references--> wiki/sources/review-checklist.md
+- wiki/decisions/context-budget.md --references--> wiki/concepts/execution-spec.md
+- wiki/decisions/context-budget.md --references--> wiki/sources/eval-loops.md
+- wiki/decisions/execution-policy.md --references--> wiki/concepts/ai-native-team.md
+- wiki/decisions/execution-policy.md --references--> wiki/concepts/execution-spec.md
+- wiki/queries/what-makes-ai-native-team.md --links_to--> wiki/concepts/ai-native-team.md
+- wiki/queries/what-makes-ai-native-team.md --links_to--> wiki/decisions/execution-policy.md
+- wiki/queries/what-makes-ai-native-team.md --references--> wiki/concepts/ai-native-team.md
+- wiki/queries/what-makes-ai-native-team.md --references--> wiki/decisions/execution-policy.md
+- wiki/sources/eval-loops.md --cites--> raw/articles/eval-loops.md
+- wiki/sources/eval-loops.md --links_to--> wiki/decisions/context-budget.md
+- wiki/sources/eval-loops.md --links_to--> wiki/topics/eval-loops.md
+- wiki/sources/platform-spec.md --cites--> raw/articles/platform-spec.md
+- wiki/sources/platform-spec.md --links_to--> wiki/concepts/ai-native-team.md
+- wiki/sources/platform-spec.md --links_to--> wiki/concepts/execution-spec.md
+- wiki/sources/platform-spec.md --links_to--> wiki/topics/model-platform.md
+- wiki/sources/review-checklist.md --cites--> raw/articles/review-checklist.md
+- wiki/sources/review-checklist.md --links_to--> wiki/concepts/ai-native-team.md
+- wiki/sources/review-checklist.md --links_to--> wiki/decisions/execution-policy.md
+- wiki/syntheses/delivery-system.md --references--> wiki/concepts/ai-native-team.md
+- wiki/syntheses/delivery-system.md --references--> wiki/decisions/execution-policy.md
+- wiki/syntheses/delivery-system.md --references--> wiki/sources/eval-loops.md
+- wiki/syntheses/delivery-system.md --references--> wiki/sources/platform-spec.md
+- wiki/topics/eval-loops.md --includes--> wiki/sources/eval-loops.md
+- wiki/topics/eval-loops.md --includes--> wiki/sources/review-checklist.md
+- wiki/topics/eval-loops.md --links_to--> wiki/decisions/context-budget.md
+- wiki/topics/eval-loops.md --links_to--> wiki/sources/eval-loops.md
+- wiki/topics/eval-loops.md --links_to--> wiki/sources/review-checklist.md
+- wiki/topics/model-platform.md --includes--> wiki/sources/eval-loops.md
+- wiki/topics/model-platform.md --includes--> wiki/sources/platform-spec.md
+- wiki/topics/model-platform.md --links_to--> wiki/concepts/execution-spec.md
+- wiki/topics/model-platform.md --links_to--> wiki/sources/eval-loops.md
+- wiki/topics/model-platform.md --links_to--> wiki/sources/platform-spec.md
