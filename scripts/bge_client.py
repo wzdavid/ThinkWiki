@@ -20,14 +20,12 @@ from typing import Iterable
 from urllib import error as urllib_error
 from urllib import request as urllib_request
 
-# 101.33.197.64 (AUX2) is the primary — lower latency in practice; 162.14.105.8 (AUX1) is fallback.
-# Path is /api/embed (TEI-style), not /v1/embeddings (OpenAI-style) — AUX server runs TEI protocol.
+# SiliconFlow BGE-M3 embedding endpoint (OpenAI-style /v1/embeddings).
 DEFAULT_BGE_ENDPOINTS = (
-    "http://101.33.197.64:8000/api/embed",
-    "http://162.14.105.8:8000/api/embed",
+    "https://api.siliconflow.cn/v1/embeddings",
 )
 BGE_TIMEOUT = 10
-DEFAULT_BGE_API_KEY = "7f2bf2c42481294bf814a8d8c66dd3c9278a6735a6a22d5c69b4f1d648f83242"
+BGE_MODEL = "BAAI/bge-m3"
 USER_AGENT = "ThinkWiki/1.0"
 
 
@@ -46,7 +44,7 @@ def _resolve_endpoints() -> list[str]:
 
 
 def _resolve_api_key() -> str:
-    return os.environ.get("BGE_API_KEY", "").strip() or DEFAULT_BGE_API_KEY
+    return os.environ.get("SILICONFLOW_API_KEY", "").strip()
 
 
 def _post_json(url: str, payload: dict, api_key: str) -> dict:
@@ -55,8 +53,8 @@ def _post_json(url: str, payload: dict, api_key: str) -> dict:
         url,
         data=data,
         headers={
+            "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
-            "X-API-Key": api_key,
             "User-Agent": USER_AGENT,
         },
         method="POST",
@@ -66,11 +64,8 @@ def _post_json(url: str, payload: dict, api_key: str) -> dict:
 
 
 def _extract_embeddings(response: dict, count: int) -> list[list[float]]:
-    # Parse priority: TEI format (embeddings[]) > OpenAI format (data[].embedding) > raw array.
-    # TEI first because the AUX server currently runs the TEI protocol.
-    embeddings = response.get("embeddings")
-    if isinstance(embeddings, list) and len(embeddings) == count:
-        return [[float(x) for x in item] for item in embeddings]
+    # Parse priority: OpenAI format (data[].embedding) > raw array.
+    # SiliconFlow returns the OpenAI-style shape.
     data = response.get("data")
     if isinstance(data, list) and data:
         vectors: list[list[float]] = []
@@ -94,15 +89,17 @@ def _normalize(vector: list[float]) -> list[float]:
 def bge_embed(texts: Iterable[str]) -> list[list[float]]:
     """Embed a batch of texts via BGE-M3. Returns normalized vectors.
 
-    Tries each endpoint in order. Raises BgeServiceUnavailable if all fail.
-    Worst-case latency is len(endpoints) * BGE_TIMEOUT seconds (20s with 2 default endpoints).
-    4xx errors (including 401/403 auth failures) short-circuit immediately without trying the next endpoint.
+    Requires SILICONFLOW_API_KEY. Tries each endpoint in order.
+    Raises BgeServiceUnavailable if the key is missing or all endpoints fail.
+    4xx errors (including 401/403 auth failures) short-circuit immediately.
     """
     text_list = [str(t).strip() for t in texts if str(t).strip()]
     if not text_list:
         return []
-    payload = {"inputs": text_list}
     api_key = _resolve_api_key()
+    if not api_key:
+        raise BgeServiceUnavailable("SILICONFLOW_API_KEY is not set")
+    payload = {"input": text_list, "model": BGE_MODEL}
     last_error: Exception | None = None
     for endpoint in _resolve_endpoints():
         try:
@@ -112,7 +109,9 @@ def bge_embed(texts: Iterable[str]) -> list[list[float]]:
         except urllib_error.HTTPError as exc:
             if 400 <= exc.code <= 499:
                 if exc.code in (401, 403):
-                    raise BgeServiceUnavailable(f"BGE-M3 auth failed (HTTP {exc.code}): check BGE_API_KEY") from exc
+                    raise BgeServiceUnavailable(
+                        f"BGE-M3 auth failed (HTTP {exc.code}): check SILICONFLOW_API_KEY"
+                    ) from exc
                 raise BgeServiceUnavailable(f"BGE-M3 client error (HTTP {exc.code})") from exc
             last_error = exc
             continue

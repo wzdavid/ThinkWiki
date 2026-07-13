@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.7.1
+### Security
+- **Removed unauthorized hardcoded BGE embedding endpoints and default API key from `bge_client.py`.** v1.7.0 had shipped with private HTTP endpoints and a baked-in shared key that did not match the documented `SILICONFLOW_API_KEY` flow. Embedding now uses SiliconFlow (`https://api.siliconflow.cn/v1/embeddings`) and requires an explicit `SILICONFLOW_API_KEY`; there is no default key and no silent third-party fallback.
+- `bge_embed` now fails fast when `SILICONFLOW_API_KEY` is unset, matching `utils.py` and the README/SKILL documentation.
+
 ## v1.7.0
 ### Added
 - Added `scripts/m27_client.py` — MiniMax M2.7 HTTP client with retry, backoff, 4xx short-circuit, and degraded fallback, shared by `crystallize` and `digest`.
